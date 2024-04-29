@@ -1,0 +1,80 @@
+service: aws-lambda-node-practice
+useDotenv: true
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  region: us-east-1 
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:*
+      Resource:
+        - arn:aws:dynamodb:us-east-1:637423379283:table/tbBook
+functions:
+  api:
+    handler: src/index.handler
+    events:
+      - httpApi:
+          path: /
+          method: get
+  getPeople:
+    handler: src/handlers/getPeopleHandler.getPeople
+    events:
+      - httpApi:
+          path: /obtenerpersonajes
+          method: get
+  createBook:
+    handler: src/handlers/createBookHandler.addBook
+    events:
+      - httpApi:
+          path: /book
+          method: post
+  getBooks:
+    handler: src/handlers/getBooksHandler.getBooks
+    events:
+      - httpApi:
+          path: /book
+          method: get
+  getBook:
+    handler: src/handlers/getBookHandler.getBook
+    events:
+      - httpApi:
+          path: /book/{id}
+          method: get
+  updateBook:
+    handler: src/handlers/updateBookHandler.updateBook
+    events:
+      - httpApi:
+          path: /book/{id}
+          method: put          
+  deleteBook:
+    handler: src/handlers/deleteBookHandler.deleteBook
+    events:
+      - httpApi:
+          path: /book/{id}
+          method: delete   
+
+resources: # CloudFormation template syntax
+  Resources:
+    TestTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: tbBook
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+
+custom:
+  esbuild:
+    bundle: true
+    minify: false
+	
+plugins:
+  - serverless-esbuild
+  - serverless-offline
